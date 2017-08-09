@@ -2,6 +2,8 @@
     Error handler archive
     Created by:
     Pedro Pereira               9778794
+    Based in codes from:
+    Fernando Mario, IME-USP
  */
 
 #include "error_handler.h"
