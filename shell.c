@@ -6,27 +6,13 @@
  */
 
 #include <stdio.h>
-#include <readline/history.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 #include "error_handler.h"
 #include "chown.h"
 #include "date.h"
-
-/**
- * Never to be exposed to main(). Forks and runs the path
- * @param  directory_path [description]
- * @return                [description]
- */
-int __exec(char *path) {
-    pid_t pid;
-
-    pid = fork();
-    if (pid == 0) {
-        // Is the child process, executes path
-    }
-}
+#include "aux.h"
 
 /**
  * Returns $ if user, # if superuser, $x/#x if last program failed.
@@ -42,77 +28,47 @@ char* __dollar_sign(int last_program_status) {
         }
         else {
             pop_stack();
-            return "#x "
+            return "#x ";
         }
     }
     if (last_program_status == 0) {
         pop_stack();
-        return "$ "
+        return "$ ";
     }
     pop_stack();
-    return "$x "
+    return "$x ";
 }
 
 /**
- * Finds the working directory of the shell.
- * @return  the working directory
+ * If it is one of our special programs, executes it.
+ * Otherwise go to __find_exec
+ * @param  line The line read in stdin
+ * @return      the return status of the program.
  */
-char *__find_wd(void) {
-    add_to_stack("__find_wd");
-    char working_directory[MAX_LENGTH_CONSTANT];
-    if (getcwd(working_directory, MAX_LENGTH_CONSTANT) != NULL) {
-        
-    }
-    else {
-        kill("__find_wd: working directory error");
-    }
-    pop_stack();
-    return working_directory;
-}
-
-/**
- * Finds the executable. if it starts with ./, finds in working directory
- * @param       name of the executable
- * @return      the path to the executable, NULL if not found
- */
-char *__find(const char *name) {
-    add_to_stack("__find");
-    if (name[0] == '.' && name[1] == '/') {
-        char *wd = find_wd();
-    }
-    pop_stack();
-}
-
-/**
- * Finds the executable in PATH and executes
- * @param name The name of the program
- */
-int __find_exec(const char *name) {
-    add_to_stack("__find_exec");
-    int result;
-    const char *path = secure_getenv("PATH");
-    // How many directories are there in the PATH?
-    string_vector paths = split(path, ":");
-    char *test_path;
-    for (int i = 0; i < paths.size; i++) {
-        test_path = strdup();
-        if (access(test_path, X_OK) != -1) {
-            break;
+int execute(const char *line) {
+    add_to_stack("execute");
+    string_vector split_line = __split(line, " ");
+    int ret;
+    if (strcmp(split_line.data[0], "cd") == 0) {
+        if (split_line.size > 1) {
+            ret = chdir(split_line.data[1]);
         }
-        free(test_path);
-        test_path = NULL;
+        else {
+            ret = chdir("~");
+        }
     }
-
-    if (test_path == NULL) {
-        printf("%s: Program not found or permissions not granted\n", name);
-        pop_stack();
-        return -2;
+    else if (strcmp(split_line.data[0], "date") == 0) {
+        ret = date(line);
+    }
+    else if (strcmp(split_line.data[0], "chown") == 0) {
+        ret = change_owner(line);
     }
     else {
-        result = __exec(test_path);
-        pop_stack();
-        return result;
+        ret = __find_exec(line);
     }
+    free_vector(split_line);
+    pop_stack();
+    return ret;
 }
 
 
@@ -123,7 +79,29 @@ int main (int argc, const char **argv) {
     char *line;
     bool stop = false;
     int last_program_status = 0;
-    while (!stop) {
+    char prompt[MAX_LENGTH_CONSTANT];
+    char *directory_path;
+    char *dollar_sign;
 
+    while (!stop) {
+        __reset_char_array(prompt);
+        prompt[0] = '[';
+        directory_path = __find_wd();
+        dollar_sign = __dollar_sign(last_program_status);
+        debug_print(0, "pid: %d", getpid());
+        strncat(prompt, directory_path, MAX_LENGTH_CONSTANT - strlen(prompt));
+        strncat(prompt, "]", MAX_LENGTH_CONSTANT - strlen(prompt));
+        strncat(prompt, dollar_sign, MAX_LENGTH_CONSTANT - strlen(prompt));
+        line = readline(prompt);
+        if (line == NULL) {
+            stop = true;
+        }
+        else {
+            last_program_status = execute(line);
+        }
+        free(line);
+        free(directory_path);
     }
+    printf("\n");
+    return 0;
 }

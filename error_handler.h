@@ -7,7 +7,7 @@
 void* emalloc(size_t size);
 
 /* Like printf, prints error message and kills program. */
-void kill(const char* expression, ...);
+void die_with_msg(const char* expression, ...);
 
 /* On error message, will print program name */
 void set_program_name(const char* program_name);

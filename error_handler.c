@@ -57,7 +57,7 @@ void add_to_stack(const char* function_name) {
 void pop_stack() {
     if(head == NULL) {
         add_to_stack("error_handler -> pop_stack");
-        kill("pop_stack: Stack is null");
+        die_with_msg("pop_stack: Stack is null");
     }
     stack i = head;
     head = head->next;
@@ -65,7 +65,7 @@ void pop_stack() {
 }
 
 /* Prints in stderr and kills program. */
-void kill(const char* expression, ...) {
+void die_with_msg(const char* expression, ...) {
     va_list args;
     char error_msg[1024];
 
@@ -97,7 +97,7 @@ void* emalloc(size_t size) {
     void* alloc = malloc(size);
     if(alloc == NULL) {
         add_to_stack("error_handler -> emalloc");
-        kill("Call to malloc failed: Out of memory");
+        die_with_msg("Call to emalloc failed: Out of memory");
     }
     return alloc;
 }

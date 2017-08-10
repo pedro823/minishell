@@ -5,4 +5,6 @@
     Raphael Gusmão                  9778561
  */
 
-int change_owner(const char *line);
+int change_owner(const char *line) {
+    return 0;
+}

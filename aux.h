@@ -26,12 +26,44 @@ typedef struct {
 * @return_example  split("abc=d;e", "=.;") => string_vector { size: 3, data: ["abc", "d", "e"] }
 *
 */
-const string_vector split(const char *to_split, char* divisor);
+const string_vector __split(const char *to_split, char* divisor);
+
+/**
+ * Forks and runs the path
+ * @param  directory_path [description]
+ * @return                The exit code of the executed program
+ */
+int __exec(char *path, const char* line);
+
+/**
+* Finds the working directory of the shell.
+* @return  the working directory
+*/
+char *__find_wd(void);
+
+/**
+ * Finds the executable. if it starts with ./, finds in working directory
+ * @param       name of the executable
+ * @return      the path to the executable, NULL if not found
+ */
+char *__find(const char *name);
+
+/**
+ * Finds the executable in PATH and executes
+ * @param name The name of the program
+ */
+int __find_exec(const char *line);
 
 /**
  * frees a string_vector.
  * @GUARANTEE no memory leaks possible.
  */
 void free_vector(string_vector to_free);
+
+/**
+ * reset an array of chars of MAX_LENGTH_CONSTANT size
+ * @param to_reset the char array to be reset
+ */
+void __reset_char_array(char *to_reset);
 
 #endif

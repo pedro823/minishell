@@ -8,12 +8,10 @@
 #ifndef __DATE_H__
 #define __DATE_H__
 
-#include "aux.h"
-
 /**
  * Prints date and returns
  * @param arguments all the arguments for parsing
  */
-void __date(char **arguments);
+int date(const char *line);
 
 #endif
