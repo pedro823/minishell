@@ -6,5 +6,4 @@
  */
 
 int change_owner(const char *line) {
-    return 0;
 }

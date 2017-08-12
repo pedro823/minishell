@@ -78,13 +78,16 @@ int __exec(char *path, const char* line) {
     if (pid == 0) {
         // CHILD
         string_vector v = __split(line, " ");
-        char **data = emalloc((v.size + 1) * sizeof(char*));
-        for (int i = 0; i < v.size; i++) {
+        free(v.data[0]);
+        char **data = emalloc((v.size + 1) * sizeof(char *));
+        data[0] = path;
+        for (int i = 1; i < v.size; i++) {
             data[i] = v.data[i];
         }
-        data[v.size] = NULL;
-        execv(path, v.data);
+        data[v.size] = (char *) NULL;
+        execv(data[0], data);
         perror("failed to execute");
+        debug_print(0, "Failed to execute command %s", path);
         exit(-1);
     }
     else {
@@ -188,24 +191,24 @@ int __find_exec(const char *line) {
 // }
 
 
-int main() {
-    char yo[MAX_LENGTH_CONSTANT];
-    set_debug_priority(0);
-    printf("execute: ");
-    scanf("%s", yo);
-    for (int i = 0; i <= strlen(yo); i++) {
-        printf("%02x ", yo[i]);
-    }
-    printf("\n");
-    int returned = __find_exec(yo);
-    printf("Program returned %d\n", returned);
-    __reset_char_array(yo);
-    char *yo2 = readline("execute2: ");
-    for (int i = 0; i < strlen(yo2) + 1; i++) {
-        printf("%02x ", yo2[i]);
-    }
-    printf("\n");
-    returned = __find_exec(yo);
-    printf("Program returned %d\n", returned);
-    return 0;
-}
+// int main() {
+//     char yo[MAX_LENGTH_CONSTANT];
+//     set_debug_priority(0);
+//     printf("execute: ");
+//     scanf("%s", yo);
+//     for (int i = 0; i <= strlen(yo); i++) {
+//         printf("%02x ", yo[i]);
+//     }
+//     printf("\n");
+//     int returned = __find_exec(yo);
+//     printf("Program returned %d\n", returned);
+//     __reset_char_array(yo);
+//     char *yo2 = readline("execute2: ");
+//     for (int i = 0; i < strlen(yo2) + 1; i++) {
+//         printf("%02x ", yo2[i]);
+//     }
+//     printf("\n");
+//     returned = __find_exec(yo);
+//     printf("Program returned %d\n", returned);
+//     return 0;
+// }

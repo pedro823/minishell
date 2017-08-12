@@ -12,6 +12,6 @@
  * Prints date and returns
  * @param arguments all the arguments for parsing
  */
-int date(const char *line);
+int date(void);
 
 #endif

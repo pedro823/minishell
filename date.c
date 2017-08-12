@@ -8,8 +8,14 @@
 #include "error_handler.h"
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "aux.h"
 
-int date(const char* line) {
+int date(void) {
+    // struct timespec time_sec;
+    //
+    // if (clock_gettime()) {
+    //
+    // }
     return 0;
 }
