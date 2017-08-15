@@ -59,10 +59,12 @@ const string_vector __split(const char *to_split, char* divisors) {
 }
 
 void free_vector(string_vector to_free) {
+    add_to_stack("aux->free_vector");
     for (int i = 0; i < to_free.size; i++) {
         free(to_free.data[i]);
     }
     free(to_free.data);
+    pop_stack();
 }
 
 void __reset_char_array(char *to_reset) {

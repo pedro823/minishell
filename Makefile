@@ -9,7 +9,7 @@ OBJECT_DIR := obj
 
 .PHONY: clean directory
 ep1sh: date.o aux.o error_handler.o shell.o chown.o
-	$(CC) -lreadline $^ -o $@
+	$(CC) $^ -o $@ -lreadline
 
 %.o: %.c
 	$(CC) $^ -c
@@ -18,4 +18,4 @@ clear:
 	rm -f *.o
 
 clear_all:
-	rm -f *.o ep1sh
+	rm -f *.o ep1sh vgcore*

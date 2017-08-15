@@ -93,17 +93,17 @@ int main (int argc, const char **argv) {
         strncat(prompt, "]", MAX_LENGTH_CONSTANT - strlen(prompt));
         strncat(prompt, dollar_sign, MAX_LENGTH_CONSTANT - strlen(prompt));
         line = readline(prompt);
-        if (strcmp(line, "") == 0) {
+        if (line == NULL) {
+            stop = true;
+        }
+        else if (strcmp(line, "") == 0) {
             free(line);
             free(directory_path);
             continue;
         }
-        add_history(line);
-        if (line == NULL) {
-            stop = true;
-        }
         else {
             last_program_status = execute(line);
+            add_history(line);
             free(line);
         }
         free(directory_path);
