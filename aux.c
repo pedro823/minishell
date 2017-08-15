@@ -181,36 +181,3 @@ int __find_exec(const char *line) {
         return result;
     }
 }
-
-// int main() {
-//     string_vector split = __split("ls", " ");
-//     printf("split.size = %d\n", split.size);
-//     for (int i = 0; i < split.size; i++) {
-//         printf("%s\n", split.data[i]);
-//     }
-//     free_vector(split);
-//     return 0;
-// }
-
-
-// int main() {
-//     char yo[MAX_LENGTH_CONSTANT];
-//     set_debug_priority(0);
-//     printf("execute: ");
-//     scanf("%s", yo);
-//     for (int i = 0; i <= strlen(yo); i++) {
-//         printf("%02x ", yo[i]);
-//     }
-//     printf("\n");
-//     int returned = __find_exec(yo);
-//     printf("Program returned %d\n", returned);
-//     __reset_char_array(yo);
-//     char *yo2 = readline("execute2: ");
-//     for (int i = 0; i < strlen(yo2) + 1; i++) {
-//         printf("%02x ", yo2[i]);
-//     }
-//     printf("\n");
-//     returned = __find_exec(yo);
-//     printf("Program returned %d\n", returned);
-//     return 0;
-// }
