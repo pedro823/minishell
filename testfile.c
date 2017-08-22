@@ -7,23 +7,9 @@
 #include <sys/wait.h>
 
 int main(int argc, char **argv) {
-	pid_t pid;
-
-	pid = fork();
-	if (pid == 0) {
-		// CHILD
-		for (int i = 0; i < 400; i++) {
-			printf("Be ready... %d\n", i);
-		}
-		return -2;
-	}
-	else {
-		// PARENT
-		int status = 0;
-
-		pid_t finished = wait(&status);
-
-		printf("Child process id %d finished. Status: %d\n", finished, status);
-		return 0;
-	}
+	FILE *stream = fopen("inexistent", "r");
+	FILE *stream2 = fopen("error_handler.c", "r");
+	printf("%p\n", stream);
+	printf("%p\n", stream2);
+	return 0;
 }

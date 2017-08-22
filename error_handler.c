@@ -30,7 +30,7 @@ void print_function_stack() {
     stack next;
     for(stack i = head; i != NULL; i = next) {
         next = i->next;
-        printf("on %s:\n", i->func_name);
+        fprintf(stderr, "on %s:\n", i->func_name);
         free(i);
     }
 }
@@ -73,8 +73,8 @@ void die_with_msg(const char* expression, ...) {
     vsnprintf(error_msg, 1024, expression, args);
     va_end(args);
 
-    printf("In program %s:\n", name);
-    printf("During the program, a fatal error ocurred:\n");
+    fprintf(stderr, "In program %s:\n", name);
+    fprintf(stderr, "During the program, a fatal error ocurred:\n");
     print_function_stack();
     fprintf(stderr, "\t%s: %s\n", name, error_msg);
     exit(-1);
@@ -89,7 +89,7 @@ void debug_print(int priority, const char* expression, ...) {
     vsnprintf(error_msg, 1024, expression, args);
     va_end(args);
 
-    printf("debug.%d \t%s\n", priority, error_msg);
+    fprintf(stderr, "debug:%d \t%s\n", priority, error_msg);
 }
 
 
