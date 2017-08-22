@@ -1,21 +1,22 @@
-/*
-    Displays current date
-    Created by:
-    Pedro Pereira                   9778794
-    Raphael Gusmão                  9778561
- */
-#include "date.h"
-#include "error_handler.h"
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include "aux.h"
+/******************************************************************************
+ *                                                                            *
+ *                   MAC0422 - Sistemas Operacionais - EP1                    *
+ *                                                                            *
+ *                           Displays current date                            *
+ *                                                                            *
+ *                      Pedro Pereira     - NUSP 9778794                      *
+ *                      Raphael R. Gusmao - NUSP 9778561                      *
+ *                                                                            *
+ ******************************************************************************/
 
-int date(void) {
-    // struct timespec time_sec;
-    //
-    // if (clock_gettime()) {
-    //
-    // }
+#include "date.h"
+#include <stdio.h>
+#include <time.h>
+
+int date () {
+    char buffer[29];
+    time_t cur_time = time(NULL);
+    strftime(buffer, 29, "%a %b %d %H:%M:%S %Z %Y", localtime(&cur_time));
+    printf("%s\n", buffer);
     return 0;
 }

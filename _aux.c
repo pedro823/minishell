@@ -1,9 +1,13 @@
-/*
-    Auxiliar functions
-    Created by:
-    Pedro Pereira                   9778794
-    Raphael Gusmão                  9778561
- */
+/******************************************************************************
+ *                                                                            *
+ *                   MAC0422 - Sistemas Operacionais - EP1                    *
+ *                                                                            *
+ *                             Auxiliar functions                             *
+ *                                                                            *
+ *                      Pedro Pereira     - NUSP 9778794                      *
+ *                      Raphael R. Gusmao - NUSP 9778561                      *
+ *                                                                            *
+ ******************************************************************************/
 
 #include <string.h>
 #include <stdlib.h>
@@ -15,9 +19,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "error_handler.h"
-#include "aux.h"
+#include "_aux.h"
 
-const string_vector __split(const char *to_split, char* divisors) {
+const string_vector __split(const char *to_split, char *divisors) {
     add_to_stack("date->split");
     int divisor_count = 0;
     // Counts how many divisors are there

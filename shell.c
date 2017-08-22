@@ -1,9 +1,13 @@
-/*
-    Razgriz Shell
-    Created by:
-    Pedro Pereira                   9778794
-    Raphael Gusmão                  9778561
- */
+/******************************************************************************
+ *                                                                            *
+ *                   MAC0422 - Sistemas Operacionais - EP1                    *
+ *                                                                            *
+ *                               Shell - ep1sh                                *
+ *                                                                            *
+ *                      Pedro Pereira     - NUSP 9778794                      *
+ *                      Raphael R. Gusmao - NUSP 9778561                      *
+ *                                                                            *
+ ******************************************************************************/
 
 #include <stdio.h>
 #include <unistd.h>
@@ -12,11 +16,11 @@
 #include "error_handler.h"
 #include "chown.h"
 #include "date.h"
-#include "aux.h"
+#include "_aux.h"
 
 /**
  * Returns $ if user, # if superuser, $x/#x if last program failed.
- * @param  last_program_status The status of the program last run.
+ * @param last_program_status The status of the program last run.
  */
 char* __dollar_sign(int last_program_status) {
     add_to_stack("__dollar_sign");
@@ -42,8 +46,8 @@ char* __dollar_sign(int last_program_status) {
 /**
  * If it is one of our special programs, executes it.
  * Otherwise go to __find_exec
- * @param  line The line read in stdin
- * @return      the return status of the program.
+ * @param line The line read in stdin
+ * @return The return status of the program.
  */
 int execute(const char *line) {
     add_to_stack("execute");
@@ -71,7 +75,6 @@ int execute(const char *line) {
     return ret;
 }
 
-
 int main (int argc, const char **argv) {
     add_to_stack("main");
     set_debug_priority(2);
@@ -93,6 +96,7 @@ int main (int argc, const char **argv) {
         strncat(prompt, "]", MAX_LENGTH_CONSTANT - strlen(prompt));
         strncat(prompt, dollar_sign, MAX_LENGTH_CONSTANT - strlen(prompt));
         line = readline(prompt);
+        add_history(line);
         if (line == NULL) {
             stop = true;
         }
@@ -103,7 +107,6 @@ int main (int argc, const char **argv) {
         }
         else {
             last_program_status = execute(line);
-            add_history(line);
             free(line);
         }
         free(directory_path);
