@@ -7,9 +7,8 @@
 #include <sys/wait.h>
 
 int main(int argc, char **argv) {
-	FILE *stream = fopen("inexistent", "r");
-	FILE *stream2 = fopen("error_handler.c", "r");
-	printf("%p\n", stream);
-	printf("%p\n", stream2);
-	return 0;
+	int a = 1;
+	int *b = &a, *c = NULL;
+
+	printf("%d\n", (b || c));
 }

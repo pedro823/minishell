@@ -22,7 +22,7 @@
 #include "_aux.h"
 
 const string_vector __split(const char *to_split, char *divisors) {
-    add_to_stack("date->split");
+    add_to_stack("aux->split");
     int divisor_count = 0;
     // Counts how many divisors are there
     int len_divisors = strlen(divisors);
@@ -105,7 +105,7 @@ int __exec(char *path, const char* line) {
 }
 
 char *__find_wd(void) {
-    add_to_stack("__find_wd");
+    add_to_stack("aux->__find_wd");
     char working_directory[MAX_LENGTH_CONSTANT];
     if (getcwd(working_directory, MAX_LENGTH_CONSTANT) == NULL) {
         die_with_msg("__find_wd: working directory error");
@@ -115,7 +115,7 @@ char *__find_wd(void) {
 }
 
 char *__find(const char *name) {
-    add_to_stack("__find");
+    add_to_stack("aux->__find");
     char *file_path;
     if (name[0] == '/') {
         if (access(name, F_OK) == -1) {
@@ -170,16 +170,17 @@ int __find_exec(const char *line) {
     add_to_stack("__find_exec");
     string_vector split_line = __split(line, " ");
     char *path = __find(split_line.data[0]);
-    free_vector(split_line);
     debug_print(0, "path = %s", path);
     if (path == NULL) {
         printf("%s: Program not found or permissions not granted\n", split_line.data[0]);
+        free_vector(split_line);
         pop_stack();
         return -2;
     }
     else {
         debug_print(0, "Executing %s", path);
         int result = __exec(path, line);
+        free_vector(split_line);
         free(path);
         pop_stack();
         return result;

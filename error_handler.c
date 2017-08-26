@@ -3,7 +3,7 @@
     Created by:
     Pedro Pereira               9778794
     Based in codes from:
-    Fernando Mario, IME-USP
+    Fernando Mario, former professor on IME-USP
  */
 
 #include "error_handler.h"
@@ -15,7 +15,7 @@
 
 struct function_stack {
     char func_name[32];
-    struct function_stack* next;
+    struct function_stack *next;
 };
 
 typedef struct function_stack* stack;
@@ -41,7 +41,7 @@ stack create_stack() {
     return s;
 }
 
-void add_to_stack(const char* function_name) {
+void add_to_stack(const char *function_name) {
     if(head == NULL) {
         head = create_stack();
     }
@@ -65,7 +65,7 @@ void pop_stack() {
 }
 
 /* Prints in stderr and kills program. */
-void die_with_msg(const char* expression, ...) {
+void die_with_msg(const char *expression, ...) {
     va_list args;
     char error_msg[1024];
 
@@ -81,7 +81,7 @@ void die_with_msg(const char* expression, ...) {
 }
 
 
-void debug_print(int priority, const char* expression, ...) {
+void debug_print(int priority, const char *expression, ...) {
     if(priority < program_priority) return;
     va_list args;
     char error_msg[1024];
@@ -93,8 +93,8 @@ void debug_print(int priority, const char* expression, ...) {
 }
 
 
-void* emalloc(size_t size) {
-    void* alloc = malloc(size);
+void *emalloc(size_t size) {
+    void *alloc = malloc(size);
     if(alloc == NULL) {
         add_to_stack("error_handler -> emalloc");
         die_with_msg("Call to emalloc failed: Out of memory");
@@ -102,7 +102,7 @@ void* emalloc(size_t size) {
     return alloc;
 }
 
-void set_program_name(const char* program_name) {
+void set_program_name(const char *program_name) {
     strncpy(name, program_name, 1023);
     name[1023] = '\0';
 }
