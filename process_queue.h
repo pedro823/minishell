@@ -27,19 +27,23 @@ typedef struct {
     node tail;
 } deque;
 
-// Adds new process to queue on TAIL
-void proc_queue_add(deque *proc_queue, struct process element);
+// Adds new process to queue on TAIL.
+// proc_queue is passed through reference
+void proc_queue_add(deque **proc_queue, struct process element);
 
-// Reverse adds (adds on HEAD)
-void proc_queue_radd(deque *proc_queue, struct process element);
+// Reverse adds (adds on HEAD) and returns new LL
+// proc_queue is passed through reference
+void proc_queue_radd(deque **proc_queue, struct process element);
 
 // Prints process queue (HEAD to TAIL)
 void print_proc_queue(deque *proc_queue);
 
 // Removes process from the head of the queue
+// proc_queue is passed through reference
 struct process pop_head(deque *proc_queue);
 
 // Removes process from the tail of the queue
+// proc_queue is passed through reference
 struct process pop_tail(deque *proc_queue);
 
 // Is the process queue empty?

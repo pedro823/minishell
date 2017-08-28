@@ -2,6 +2,7 @@
 #define __ERROR_HANDLER__
 
 #include <stdlib.h>
+#include "_aux.h"
 
 /* Allocates memory, kills program if insuficient memory. */
 void* emalloc(size_t size);
@@ -23,5 +24,8 @@ void debug_print(int priority, const char *expression, ...);
 
 /* Pops stack. Will not print popped function on error. */
 void pop_stack();
+
+/* Check if priority is less than or equal to desired priority */
+bool debug_priority_lte(int desired_priority);
 
 #endif

@@ -7,6 +7,7 @@
  */
 
 #include "error_handler.h"
+#include "_aux.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -64,7 +65,6 @@ void pop_stack() {
     free(i);
 }
 
-/* Prints in stderr and kills program. */
 void die_with_msg(const char *expression, ...) {
     va_list args;
     char error_msg[1024];
@@ -109,4 +109,8 @@ void set_program_name(const char *program_name) {
 
 void set_debug_priority(int priority) {
     program_priority = priority;
+}
+
+bool debug_priority_lte(int desired_priority) {
+    return program_priority <= desired_priority;
 }

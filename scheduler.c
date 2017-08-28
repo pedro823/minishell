@@ -43,7 +43,7 @@ deque *read_process_list(char *file_name) {
         p.deadline = atof(args.data[2]);
         p.name = strdup(args.data[3]);
 
-        proc_queue_add(queue, p);
+        proc_queue_add(&queue, p);
         print_proc_queue(queue);
         free_vector(args);
         count++;

@@ -18,6 +18,9 @@ OBJECT_DIR := obj
 ep1sh: date.o _aux.o error_handler.o shell.o chown.o
 	$(CC) $^ -o $@ -lreadline
 
+scheduler: scheduler.o _aux.o error_handler.o process_queue.o
+	$(CC) $^ -o $@
+
 %.o: %.c
 	$(CC) $^ -c
 
@@ -25,4 +28,4 @@ clear:
 	rm -f *.o
 
 clear_all:
-	rm -f *.o ep1sh
+	rm -f *.o ep1sh scheduler
