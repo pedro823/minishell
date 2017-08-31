@@ -9,11 +9,12 @@
 #include "error_handler.h"
 #include "_aux.h"
 #include "process_queue.h"
+#include "scheduler_methods.h"
 #include <string.h>
+#include <time.h>
 
 deque *read_process_list(char *file_name) {
     add_to_stack("scheduler->read_process_list");
-    debug_print(0, "Hello!");
     FILE *stream = fopen(file_name, "r");
     if (stream == NULL) {
         die_with_msg("File %s could not be open for reading.", file_name);
@@ -30,7 +31,6 @@ deque *read_process_list(char *file_name) {
         if (size < 0) {
             break;
         }
-        debug_print(0, "count = %d", count);
 
         string_vector args = __split(line, " ");
         if (args.size < 4) {
@@ -41,10 +41,10 @@ deque *read_process_list(char *file_name) {
         p.init_time = atof(args.data[0]);
         p.dt = atof(args.data[1]);
         p.deadline = atof(args.data[2]);
-        p.name = strdup(args.data[3]);
+        p.name = __chomp(strdup(args.data[3]));
+        p.time_started = -1;
 
         proc_queue_add(&queue, p);
-        print_proc_queue(queue);
         free_vector(args);
         count++;
     } while (size >= 0);
@@ -55,13 +55,17 @@ deque *read_process_list(char *file_name) {
 }
 
 int main(int argc, char **argv) {
-    set_debug_priority(0);
+    set_debug_priority(1);
     set_program_name("scheduler.c");
+    add_to_stack("main");
     if (argc != 2) {
         printf("usage: %s <file>", argv[0]);
         return 1;
     }
     deque *pq = read_process_list(argv[1]);
-    print_proc_queue(pq);
+
+    round_robin(&pq, 1);
+
+    pop_stack();
     return 0;
 }

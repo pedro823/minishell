@@ -11,7 +11,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-// TODO remove stdio
 #include <stdio.h>
 #include <unistd.h>
 #include <readline/readline.h>
@@ -20,6 +19,28 @@
 #include <sys/wait.h>
 #include "error_handler.h"
 #include "_aux.h"
+#include <time.h>
+#include <math.h>
+
+// Converts a positive time described in a float to a timespec
+struct timespec ftots(float dt) {
+    add_to_stack("scheduler_methods->ftots");
+    struct timespec t;
+    t.tv_sec = (long) floorf(dt);
+    t.tv_nsec = (long) floorf((dt - floorf(dt)) * 1000000000);
+    pop_stack();
+    return t;
+}
+
+// Converts a struct timespec to a float
+float tstof(struct timespec dt) {
+    add_to_stack("scheduler_methods->tstof");
+    float t = (float) dt.tv_sec;
+    t += (float) dt.tv_nsec / 1000000000;
+    pop_stack();
+    return t;
+}
+
 
 const string_vector __split(const char *to_split, char *divisors) {
     add_to_stack("aux->split");
@@ -49,7 +70,6 @@ const string_vector __split(const char *to_split, char *divisors) {
 
     while (runner != NULL) {
         splitted_string = strdup(strsep(&runner, divisors));
-        // TODO check if this 'if' is really necessary
         if (strcmp(splitted_string, "") == 0) {
             v.data[counter++] = strdup("");
         }
@@ -60,6 +80,17 @@ const string_vector __split(const char *to_split, char *divisors) {
     free(start);
     pop_stack();
     return v;
+}
+
+char *__chomp(char *to_chomp) {
+    int size = strlen(to_chomp);
+    for (int i = 0; i < size; i++) {
+        if (to_chomp[i] == '\n') {
+            to_chomp[i] = '\0';
+            break;
+        }
+    }
+    return to_chomp;
 }
 
 void free_vector(string_vector to_free) {

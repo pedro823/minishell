@@ -16,6 +16,7 @@
 #define true 1
 #define false 0
 #define MAX_LENGTH_CONSTANT 2048
+#include <time.h>
 
 typedef struct {
     int size;
@@ -31,6 +32,12 @@ typedef struct {
  * @return_example split("abc=d;e", "=.;") => string_vector { size: 3, data: ["abc", "d", "e"] }
  */
 const string_vector __split(const char *to_split, char* divisor);
+
+/**
+ * changes first '\n' to '\0'.
+ * @param to_strip string to be stripped
+ */
+char *__chomp(char *to_chomp);
 
 /**
  * Forks and runs the path.
@@ -69,5 +76,20 @@ void free_vector(string_vector to_free);
  * @param to_reset the char array to be reset
  */
 void __reset_char_array(char *to_reset);
+
+/**
+ * Constructs a timespec representing the time in seconds
+ * based on a positive float
+ * @param  dt the time, in seconds
+ * @return    the same time, in a struct timespec
+ */
+struct timespec ftots(float dt);
+
+/**
+ * Inverse function of ftots
+ * @param  dt the time, in tv_sec and tv_nsec
+ * @return    the float representing the time
+ */
+float tstof(struct timespec dt);
 
 #endif
