@@ -16,10 +16,10 @@ OBJECT_DIR := obj
 
 .PHONY: clean directory
 ep1sh: date.o _aux.o error_handler.o shell.o chown.o
-	$(CC) $^ -o $@ -lreadline
+	$(CC) $^ -o $@ -lreadline -Wall
 
-scheduler: scheduler.o _aux.o error_handler.o process_queue.o scheduler_methods.o
-	$(CC) $^ -o $@ -lm
+scheduler: scheduler.o _aux.o error_handler.o round_robin.o shortest_job_first.o process_queue.o scheduler_methods.o
+	$(CC) $^ -o $@ -lm -pthread -Wall
 
 %.o: %.c
 	$(CC) $^ -c

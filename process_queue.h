@@ -8,18 +8,30 @@
 #define __PROC_QUEUE_H__
 
 #include "_aux.h"
-
+#include <pthread.h>
+#include <semaphore.h>
 
  // Double-ended linked list queue
  struct process {
-     float init_time;
-     float dt;
-     float deadline;
-     float time_started;
-     char *name;
-     struct process *next;
-     struct process *prev;
- };
+    float init_time;
+    float dt;
+    float deadline;
+    float time_started;
+    float time_ended;
+    char *name;
+    sem_t *entry_flag;
+    sem_t *exit_flag;
+    pthread_t thread;
+    struct process *next;
+    struct process *prev;
+};
+
+// struct for calling create_thread
+struct sim_arguments {
+    struct process *proc; // Process to be simulated
+    float quantum;
+    int process_number; // for return purposes
+};
 
 typedef struct process *node;
 
@@ -55,6 +67,9 @@ struct process pop_head(deque **proc_queue);
 // Removes process from the tail of the queue
 // proc_queue is passed through reference
 struct process pop_tail(deque **proc_queue);
+
+// creates the thread, WITHOUT pthread_join, with function f, on node proc.
+void create_thread(node proc, void *(*function) (void *), struct sim_arguments *args);
 
 // Frees a queue
 void free_queue(deque **proc_queue);

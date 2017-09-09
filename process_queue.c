@@ -2,6 +2,8 @@
 #include "_aux.h"
 #include "error_handler.h"
 #include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
 
 void proc_queue_add(deque **proc_queue, struct process element) {
     add_to_stack("process_queue->add");
@@ -75,18 +77,18 @@ void proc_queue_radd(deque **proc_queue, struct process element) {
 void print_proc_queue(deque *proc_queue) {
     add_to_stack("process_queue->print");
     if (proc_queue == NULL) {
-        printf("Process queue is NULL\n");
+        fprintf(stderr, "Process queue is NULL\n");
         pop_stack();
         return;
     }
-    printf("Process queue:\n");
+    fprintf(stderr, "\tProcess queue:\n");
     int count = 0;
     for (node i = proc_queue->head; i != NULL; i = i->next) {
         if (i->name == NULL) {
-            printf("%d HAS NULL NAME\n");
+            fprintf(stderr, "\t%d HAS NULL NAME\n", count);
         }
         else {
-            printf("%d:\tName: %s\n\tinit_time: %.1f\n\tdt: %.1f\n\tdeadline: %.1f\n", count, i->name, i->init_time, i->dt, i->deadline);
+            fprintf(stderr, "\t%d:\t\tName: %s\n\t\tinit_time: %.1f\n\t\tdt: %.1f\n\t\tdeadline: %.1f\n", count, i->name, i->init_time, i->dt, i->deadline);
         }
         count++;
     }
@@ -96,17 +98,17 @@ void print_proc_queue(deque *proc_queue) {
 void print_rev_queue(deque *proc_queue) {
     add_to_stack("process_queue->rev_print");
     if (proc_queue == NULL) {
-        printf("Process queue is NULL\n");
+        fprintf(stderr, "\tProcess queue is NULL\n");
         return;
     }
-    printf("Process queue:\n");
+    fprintf(stderr, "\tProcess queue:\n");
     int count = 0;
     for (node i = proc_queue->tail; i != NULL; i = i->prev) {
         if (i->name == NULL) {
-            printf("%d HAS NULL NAME\n");
+            fprintf(stderr, "\t%d HAS NULL NAME\n", count);
         }
         else {
-            printf("%d:\t Name: %s\n\tinit_time: %.1f\n\tdt: %.1f\n\tdeadline: %.1f\n", count, i->name, i->init_time, i->dt, i->deadline);
+            fprintf(stderr, "\t%d:\t Name: %s\n\t\tinit_time: %.1f\n\t\tdt: %.1f\n\t\tdeadline: %.1f\n", count, i->name, i->init_time, i->dt, i->deadline);
         }
         count++;
     }
@@ -114,7 +116,9 @@ void print_rev_queue(deque *proc_queue) {
 }
 
 void proc_queue_cycle(deque **proc_queue) {
+    add_to_stack("proc_queue_cycle");
     proc_queue_add(proc_queue, pop_head(proc_queue));
+    pop_stack();
 }
 
 void free_queue(deque **proc_queue) {
@@ -182,6 +186,18 @@ struct process pop_tail(deque **proc_queue) {
     (*proc_queue)->tail = new_tail;
     pop_stack();
     return popped;
+}
+
+void create_thread(node proc, void *(*function) (void *), struct sim_arguments *args) {
+    add_to_stack("process_queue->start_thread");
+    debug_print(1, "creating process for process %s", proc->name);
+
+    if (pthread_create(&proc->thread, NULL, function, (void *) args) != 0) {
+        free(args);
+        // Unable to free queue :c
+        die_with_msg("pthread_create problem with process %s", proc->name);
+    }
+    pop_stack();
 }
 
 bool is_empty(deque *proc_queue) {
