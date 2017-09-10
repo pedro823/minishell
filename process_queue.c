@@ -190,7 +190,7 @@ struct process pop_tail(deque **proc_queue) {
 
 void create_thread(node proc, void *(*function) (void *), struct sim_arguments *args) {
     add_to_stack("process_queue->start_thread");
-    debug_print(1, "creating process for process %s", proc->name);
+    debug_print(1, "creating thread for process %s", proc->name);
 
     if (pthread_create(&proc->thread, NULL, function, (void *) args) != 0) {
         free(args);

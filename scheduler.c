@@ -12,6 +12,7 @@
 #include "scheduler_methods.h"
 #include "shortest_job_first.h"
 #include "round_robin.h"
+#include "priority_schedule.h"
 #include <string.h>
 #include <time.h>
 #include <semaphore.h>
@@ -100,7 +101,7 @@ int main(int argc, char **argv) {
         round_robin(&pq, QUANTUM);
     }
     else if (strcmp(argv[2], "3") == 0) {
-        // priority_schedule(&pq, QUANTUM);
+        priority_schedule(&pq, QUANTUM);
     }
     else {
         print_usage(argv[0]);

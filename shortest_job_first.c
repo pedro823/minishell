@@ -30,6 +30,7 @@ void *sjf_simulator(void *void_args) {
         die_with_msg("Semaphore error in thread %s.", args->proc->name);
     }
     // Wait for ending...
+    debug_print(0, "Process %s running!", args->proc->name);
     struct simulator_return *ret = emalloc(sizeof(struct simulator_return));
     if (sem_wait(args->proc->exit_flag) != 0) {
         perror("semaphore error:");
@@ -58,6 +59,8 @@ void *sjf_queue_controller(void *void_args) {
         float clock_now = sjf_get_current_time(time_start);
         while (count < args->processes_size && clock_now >= args->processes[count].init_time) {
             debug_print(0, "queue_controller is now putting process '%s' in queue", args->processes[count].name);
+            debug_print(0, "count = %d", count);
+            debug_print(1, "Locking flags for %s", args->processes[count].name);
             sem_init(args->processes[count].entry_flag, 0, 0);
             sem_init(args->processes[count].exit_flag, 0, 0);
             args->processes[count].time_started = clock_now;
@@ -68,8 +71,9 @@ void *sjf_queue_controller(void *void_args) {
             /* --- Enter critical section --- */
             queue_changed = true;
             proc_queue_add(&jobs, args->processes[count]);
-            sim->proc = jobs->head;
-            create_thread(jobs->head, sjf_simulator, sim);
+            print_proc_queue(jobs);
+            sim->proc = jobs->tail;
+            create_thread(jobs->tail, sjf_simulator, sim);
             /* --- Exit critical section  --- */
             pthread_mutex_unlock(&jobs_flag);
             pthread_mutex_unlock(&change_bools);
@@ -90,20 +94,20 @@ struct process *sjf_merge_new(struct process *a, struct process *b, int size_a, 
         return a;
     }
     struct process *merged = emalloc((size_a + size_b) * sizeof(struct process));
-    int i = 0, j = 0, k = 0;
-    while (i < size_a  && j < size_b) {
-        if (a[i].dt > b[i].dt) {
-            merged[k++] = a[i++];
+    int i = size_a - 1, j = size_b - 1, k = size_a + size_b - 1;
+    while (i >= 0  && j >= 0) {
+        if (a[i].dt <= b[j].dt) {
+            merged[k--] = a[i--];
         }
         else {
-            merged[k++] = b[j++];
+            merged[k--] = b[j--];
         }
     }
-    while (i < size_a) {
-        merged[k++] = a[i++];
+    while (i >= 0) {
+        merged[k--] = a[i--];
     }
-    while (j < size_b) {
-        merged[k++] = b[j++];
+    while (j >= 0) {
+        merged[k--] = b[j--];
     }
     free(a);
     free(b);
@@ -116,7 +120,7 @@ void *sjf_job_simulator(void *void_args) {
     struct process *organized_jobs = NULL;
     struct scheduler_return *ret = emalloc(sizeof(struct scheduler_return));
     clock_t time_started = clock();
-    while(!end_of_simulation || size > 0) {
+    while(!end_of_simulation || size > 0 || queue_changed) {
         pthread_mutex_lock(&change_bools);
         int new_size;
         if (queue_changed) {
@@ -137,15 +141,23 @@ void *sjf_job_simulator(void *void_args) {
             // Organized_jobs is sorted in INVERTED order.
             struct process proc = organized_jobs[size - 1];
             size--;
+
+            debug_print(123123, "Running process %s", proc.name);
             sem_post(proc.entry_flag);
+
             struct timespec sleep_amount = ftots(proc.dt);
+            debug_print(0, "SIMULATING PROCESS %s with dt %f", proc.name, proc.dt);
             if (nanosleep(&sleep_amount, NULL) != 0) {
                 die_with_msg("sjf_job_simulator: Nanosleep failed");
             }
+            debug_print(0, "Slept for %f seconds", proc.dt);
             sem_post(proc.exit_flag);
             // proc is done. adds to dead list
             proc.time_ended = sjf_get_current_time(time_started);
             proc_queue_add(&dead_proc_queue, proc);
+            // Wait for process to fully finish
+            struct simulator_return *thread_return;
+            pthread_join(proc.thread, (void **) &thread_return);
         }
         else {
             // No process to run: idles
@@ -169,7 +181,6 @@ void shortest_job_first(deque **proc_queue) {
     pthread_t scheduler, controller;
     int size_order;
     struct process *order = to_array(proc_queue, &size_order);
-    jobs = emalloc(size_order * sizeof(struct process)); // Will always have enough space
     sort_queue(order, 0, size_order - 1, 0);
     // Invoke scheduler
     if (pthread_create(&scheduler, NULL, sjf_job_simulator, NULL) != 0) {
