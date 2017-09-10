@@ -80,7 +80,7 @@ void *queue_controller(void *void_args) {
             debug_print(0, "queue_controller is now putting process '%s' in sim_queue", args->processes[count].name);
             sem_init(args->processes[count].entry_flag, 0, 0);
             sem_init(args->processes[count].exit_flag, 0, 0);
-            args->processes[count].time_started = clock_now;
+            args->processes[count].time_started = -1;
             struct sim_arguments *sim = emalloc(sizeof(struct sim_arguments));
             sim->quantum = args->quantum;
             sim->process_number = count;
@@ -111,6 +111,7 @@ void *round_robin_simulator(void *void_args) {
     struct scheduler_return *ret = emalloc(sizeof(struct scheduler_return));
     ret->wait_time = ret->deadline_trespass = 0;
     ret->amount_context_change = 0;
+    struct process *prev = NULL;
     while (!(end_of_simulation && is_empty(sim_queue))) {
         if (is_empty(sim_queue)) {
             // it's empty. sleep for 0.1 second.
@@ -133,17 +134,20 @@ void *round_robin_simulator(void *void_args) {
             }
             // If process needs less than 1 quantum, give it less
             float ideal_run_time = minf(args->quantum, to_simulate->dt);
-            debug_print(0, "simulating process %s for %fs", to_simulate->name, ideal_run_time);
+            debug_print(0, "simulating process %s for %.1fs in CPU0", to_simulate->name, ideal_run_time);
             to_simulate->dt -= ideal_run_time;
-            ret->amount_context_change++;
             sem_post(to_simulate->entry_flag);
+
+            if (prev == NULL || strcmp(prev->name, to_simulate->name) != 0) {
+                ret->amount_context_change++;
+            }
+            prev = to_simulate;
 
             struct timespec nanosleep_time = ftots(ideal_run_time);
             if (nanosleep(&nanosleep_time, NULL) < 0) {
                 die_with_msg("nanosleep failed at process %s", to_simulate->name);
             }
 
-            ret->amount_context_change++;
             sem_post(to_simulate->exit_flag);
 
             pthread_mutex_lock(&deque_flag);
@@ -151,7 +155,7 @@ void *round_robin_simulator(void *void_args) {
             debug_print(0, "%s->dt = %.1f", to_simulate->name, to_simulate->dt);
             if (to_simulate->dt < 1e-4) {
                 // Process ended. Remove and add to dead
-                to_simulate->time_ended = get_current_time(time_start);
+                to_simulate->time_ended = ideal_time;
                 float trespass = get_current_time(time_start) - to_simulate->deadline;
                 if (trespass < 1e-3) {
                     ret->amount_completed_in_deadline++;
@@ -213,5 +217,7 @@ void round_robin(deque **proc_queue, float quantum) {
         }
         print_statistics(statistics, size_order);
     }
+    generate_trace(&dead_proc_queue, *statistics, "rr");
+    free(statistics);
     pop_stack();
 }

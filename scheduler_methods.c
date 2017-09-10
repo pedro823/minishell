@@ -16,6 +16,8 @@
 #include <pthread.h>
 #include <math.h>
 
+static int run = 1;
+
 float minf(float a, float b) {
     return a < b ? a : b;
 }
@@ -63,8 +65,10 @@ deque *to_linked_list(struct process *array, int size) {
 }
 
 // Returns priority of the process. ALWAYS >= 1.
-int get_priority(struct process proc) {
-    return (proc.dt - proc.deadline <= 1 ? 1 : (int) round(proc.dt - proc.deadline));
+int get_priority(struct process proc, float time_now) {
+    float ratio = (time_now + proc.dt) / proc.deadline;
+    debug_print(0, "get_priority ratio = %f", ratio);
+    return (int) ceil(ratio * 10);
 }
 
 // Aux merge function
@@ -88,26 +92,9 @@ void merge(struct process *job_list, int start, int mid, int end, char mode) {
             temp[k++] = job_list[j++];
         }
     }
-    else if (mode == 1) {
-        while (i <= mid && j <= end) {
-            if (job_list[i].dt > job_list[j].dt) {
-                temp[k++] = job_list[i++];
-            }
-            else {
-                temp[k++] = job_list[j++];
-            }
-        }
-        while (i <= mid) {
-            temp[k++] = job_list[i++];
-        }
-        while (j <= end) {
-            temp[k++] = job_list[j++];
-        }
-    }
     else {
         while (i <= mid && j <= end) {
-            // Our priority: deadline - dt
-            if (get_priority(job_list[i]) <= get_priority(job_list[j])) {
+            if (job_list[i].dt > job_list[j].dt) {
                 temp[k++] = job_list[i++];
             }
             else {
@@ -136,6 +123,39 @@ void sort_queue(struct process *job_list, int start, int end, char mode) {
         sort_queue(job_list, mid + 1, end, mode);
         merge(job_list, start, mid, end, mode);
     }
+}
+
+void generate_trace(deque **dead_proc_queue, struct scheduler_return statistics, char *name) {
+    add_to_stack("generate_trace");
+    node next;
+    char filename[100];
+    for (int i = 0; i < 100; i++) {
+        filename[i] = '\0';
+    }
+    strncat(filename, "trace_", 100 - strlen(filename));
+    strncat(filename, name, 100 - strlen(filename));
+    strncat(filename, "_", 100 - strlen(filename));
+    time_t t = time(NULL) % 100000;
+    char t_string[30];
+    snprintf(t_string, 30, "%lld", t);
+    strncat(filename, t_string, 100 - strlen(filename));
+    if (debug_priority_lte(3)) {
+        fprintf(stderr, "\tThe report for this schedule is available at %s\n", filename);
+    }
+
+    FILE *stream = fopen(filename, "w");
+    if (stream == NULL) {
+        die_with_msg("File %s could not be open for writing.", filename);
+    }
+
+    for (node i = (*dead_proc_queue)->head; i != NULL; i = next) {
+        next = i->next;
+        fprintf(stream, "%s %.1f %.1f\n", i->name, i->time_started, i->time_ended - i->time_started);
+        free(i);
+    }
+    fprintf(stream, "%d\n", statistics.amount_context_change);
+    fclose(stream);
+    pop_stack();
 }
 
 void print_statistics(struct scheduler_return *statistics, int array_size) {

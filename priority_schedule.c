@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <pthread.h>
+#include <string.h>
 
 // Visible to all threads
 static deque *sim_queue;
@@ -72,7 +73,7 @@ void *ps_controller(void *void_args) {
             debug_print(0, "ps_controller is putting process '%s' in queue", args->processes[count].name);
             sem_init(args->processes[count].entry_flag, 0, 0);
             sem_init(args->processes[count].exit_flag, 0, 0);
-            args->processes[count].time_started = clock_now;
+            args->processes[count].time_started = -1;
             struct sim_arguments *sim = emalloc(sizeof(struct sim_arguments));
             sim->quantum = args->quantum;
             sim->process_number = count;
@@ -102,6 +103,7 @@ void *priority_schedule_simulator(void *void_args) {
     struct scheduler_return *ret = emalloc(sizeof(struct scheduler_return));
     ret->wait_time = ret->deadline_trespass = 0;
     ret->amount_context_change = 0;
+    struct process *prev = NULL;
     while (!end_of_simulation || !is_empty(sim_queue)) {
         if (is_empty(sim_queue)) {
             // Queue is empty. IDLES.
@@ -114,34 +116,37 @@ void *priority_schedule_simulator(void *void_args) {
             ideal_time += 0.1;
         }
         else {
-            // Gets process to simulates and does it
+            // Gets process to simulate and does it
             node to_simulate = sim_queue->head;
             if (to_simulate->time_started == -1) {
-                to_simulate->time_started = ps_get_current_time(time_start);
+                to_simulate->time_started = ideal_time;
                 ret->wait_time += to_simulate->time_started - to_simulate->init_time;
             }
             // Finds how many quantums this process will have
-            int amount_quantum = get_priority(*to_simulate);
+            int amount_quantum = get_priority(*to_simulate, ideal_time);
             // Gets minimum between amount of quantum vs. dt
             float ideal_run_time = minf(args->quantum * amount_quantum, to_simulate->dt);
             debug_print(0, "Priority for %s is %d quantums", to_simulate->name, amount_quantum);
-            ret->amount_context_change++;
             sem_post(to_simulate->entry_flag);
-
+            debug_print(0, "ideal_run_time is %f", ideal_run_time);
+            if (prev == NULL || strcmp(prev->name, to_simulate->name) != 0) {
+                ret->amount_context_change++;
+            }
+            prev = to_simulate;
+            debug_print(2, "Simulating process '%s' for %.1fs in CPU0", to_simulate->name, ideal_run_time);
             struct timespec nanosleep_time = ftots(ideal_run_time);
             if (nanosleep(&nanosleep_time, NULL) < 0) {
                 add_to_stack("round_robin_simulator");
                 die_with_msg("Nanosleep failed");
             }
             to_simulate->dt -= ideal_run_time;
-            ret->amount_context_change++;
             sem_post(to_simulate->exit_flag);
             pthread_mutex_lock(&deque_flag);
             /* --- Enter critical section --- */
             debug_print(0, "%s->dt = %.1f", to_simulate->name, to_simulate->dt);
             if (to_simulate->dt < 1e-4) {
                 // Process ended.
-                to_simulate->time_ended = ps_get_current_time(time_start);
+                to_simulate->time_ended = ideal_time;
                 float trespass = ps_get_current_time(time_start) - to_simulate->deadline;
                 if (trespass < 1e-3) {
                     ret->amount_completed_in_deadline++;
@@ -203,5 +208,7 @@ void priority_schedule(deque **proc_queue, float quantum) {
         }
         print_statistics(statistics, size_order);
     }
+    generate_trace(&dead_proc_queue, *statistics, "ps");
+    free(statistics);
     pop_stack();
 }

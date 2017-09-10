@@ -1,0 +1,18 @@
+******************************************************************************
+*                                                                            *
+*                   MAC0422 - Sistemas Operacionais - EP1                    *
+*                                                                            *
+*                                                                            *
+*                                                                            *
+*                      Pedro Pereira     - NUSP 9778794                      *
+*                      Raphael R. Gusmao - NUSP 9778561                      *
+*                                                                            *
+******************************************************************************
+
+Como ler esse README:
+    Todo '$' no começo de uma linha representa um comando a ser digitado no
+    terminal, na sintaxe de BASH.
+
+PARTE I DO EP - SHELL:
+Para fabricar o executável:
+$ make ep1sh

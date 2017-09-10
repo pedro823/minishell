@@ -28,4 +28,4 @@ clear:
 	rm -f *.o
 
 clear_all:
-	rm -f *.o ep1sh scheduler
+	rm -f *.o ep1sh scheduler trace_*
